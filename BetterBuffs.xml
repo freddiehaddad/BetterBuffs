@@ -1,0 +1,103 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+  ..\FrameXML\UI.xsd">
+<Script file="BetterBuffs.lua"/>
+<Frame name="BetterBuffs" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="50" y="50"/>
+  </Size>
+  <Anchors>
+    <Anchor point="CENTER" relativePoint="CENTER" relativeTo="UIParent" x="0" y="0" />
+  </Anchors>
+  <Scripts>
+    <OnLoad function="BetterBuffs_OnLoad"/>
+    <OnEvent function="BetterBuffs_OnEvent"/>
+    <OnUpdate function="BetterBuffs_OnUpdate"/>
+  </Scripts>
+</Frame>
+<Frame name="BetterBuffsBuffFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="50" y="50"/>
+  </Size>
+  <Anchors>
+    <Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="UIParent" x="-215" y="-10" />
+  </Anchors>
+</Frame>
+<Frame name="BetterBuffsDebuffFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="50" y="50"/>
+  </Size>
+  <Anchors>
+    <Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="UIParent" x="790" y="-170" />
+  </Anchors>
+</Frame>
+<Button name="BetterBuffsAuraButtonTemplate" virtual="true">
+  <Layers>
+    <Layer level="BACKGROUND">
+      <Texture name="$parentIcon" parentKey="Icon"/>
+      <FontString name="$parentCount" inherits="NumberFontNormal" parentKey="count">
+        <Anchors>
+          <Anchor point="BOTTOMRIGHT">
+            <Offset>
+              <AbsDimension x="-2" y="2"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+      </FontString>
+      <FontString name="$parentDuration" inherits="GameFontNormalSmall" hidden="true" parentKey="duration">
+        <Anchors>
+          <Anchor point="TOP" relativePoint="BOTTOM" />
+        </Anchors>
+      </FontString>
+    </Layer>
+  </Layers>
+  <Scripts>
+    <OnEnter>
+      GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
+      GameTooltip:SetFrameLevel(self:GetFrameLevel() + 2)
+      GameTooltip:SetUnitAura(PlayerFrame.unit, self:GetID(), self.filter)
+    </OnEnter>
+    <OnLeave>
+      GameTooltip:Hide()
+    </OnLeave>
+  </Scripts>
+</Button>
+<Button name="BetterBuffsBuffButtonTemplate" parentArray="BetterBuffsBuffButton" inherits="BetterBuffsAuraButtonTemplate" virtual="true">
+  <Size x="30" y="30"/>
+  <Scripts>
+    <OnLoad>
+      BetterBuffsBuffButton_OnLoad(self)
+    </OnLoad>
+    <OnClick>
+      BetterBuffsBuffButton_OnClick(self, button, down)
+    </OnClick>
+  </Scripts>
+</Button>
+<Button name="BetterBuffsDebuffButtonTemplate" parentArray="BetterBuffsDebuffButton" inherits="BetterBuffsAuraButtonTemplate" virtual="true">
+  <Size x="40" y="40"/>
+  <Layers>
+    <Layer level="OVERLAY">
+      <Texture name="$parentBorder" parentKey="Border" file="Interface\Buttons\UI-Debuff-Overlays">
+        <Size>
+          <AbsDimension x="43" y="42"/>
+        </Size>
+        <Anchors>
+          <Anchor point="CENTER"/>
+        </Anchors>
+        <TexCoords left="0.296875" right="0.5703125" top="0" bottom="0.515625"/>
+      </Texture>	
+      <FontString parentKey="symbol" inherits="TextStatusBarText">
+        <Anchors>
+          <Anchor point="TOPLEFT">
+            <Offset x="2" y="-2"/>
+          </Anchor>
+        </Anchors>
+      </FontString>
+    </Layer>
+  </Layers>
+  <Scripts>
+    <OnLoad>
+      self.duration:SetPoint("TOP", self, "BOTTOM", 0, -1)
+    </OnLoad>
+  </Scripts>
+</Button>
+</Ui>
