@@ -1,36 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
   ..\FrameXML\UI.xsd">
 <Script file="BetterBuffs.lua"/>
-<Frame name="BetterBuffs" parent="UIParent" frameStrata="LOW" toplevel="true">
-  <Size>
-    <AbsDimension x="50" y="50"/>
-  </Size>
-  <Anchors>
-    <Anchor point="CENTER" relativePoint="CENTER" relativeTo="UIParent" x="0" y="0" />
-  </Anchors>
-  <Scripts>
-    <OnLoad function="BetterBuffs_OnLoad"/>
-    <OnEvent function="BetterBuffs_OnEvent"/>
-    <OnUpdate function="BetterBuffs_OnUpdate"/>
-  </Scripts>
-</Frame>
-<Frame name="BetterBuffsBuffFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
-  <Size>
-    <AbsDimension x="50" y="50"/>
-  </Size>
-  <Anchors>
-    <Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="UIParent" x="-215" y="-10" />
-  </Anchors>
-</Frame>
-<Frame name="BetterBuffsDebuffFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
-  <Size>
-    <AbsDimension x="50" y="50"/>
-  </Size>
-  <Anchors>
-    <Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="UIParent" x="790" y="-170" />
-  </Anchors>
-</Frame>
 <Button name="BetterBuffsAuraButtonTemplate" virtual="true">
+  <Size x="30" y="30"/>
   <Layers>
     <Layer level="BACKGROUND">
       <Texture name="$parentIcon" parentKey="Icon"/>
@@ -62,7 +34,6 @@
   </Scripts>
 </Button>
 <Button name="BetterBuffsBuffButtonTemplate" parentArray="BetterBuffsBuffButton" inherits="BetterBuffsAuraButtonTemplate" virtual="true">
-  <Size x="30" y="30"/>
   <Scripts>
     <OnLoad>
       BetterBuffsBuffButton_OnLoad(self)
@@ -73,12 +44,11 @@
   </Scripts>
 </Button>
 <Button name="BetterBuffsDebuffButtonTemplate" parentArray="BetterBuffsDebuffButton" inherits="BetterBuffsAuraButtonTemplate" virtual="true">
-  <Size x="40" y="40"/>
   <Layers>
     <Layer level="OVERLAY">
       <Texture name="$parentBorder" parentKey="Border" file="Interface\Buttons\UI-Debuff-Overlays">
         <Size>
-          <AbsDimension x="43" y="42"/>
+          <AbsDimension x="33" y="32"/>
         </Size>
         <Anchors>
           <Anchor point="CENTER"/>
@@ -100,4 +70,106 @@
     </OnLoad>
   </Scripts>
 </Button>
+<Button name="BetterBuffsEnchantButtonTemplate" parentArray="BetterBuffsEnchant" inherits="BetterBuffsAuraButtonTemplate" virtual="true">
+  <Layers>
+    <Layer level="OVERLAY">
+      <Texture name="$parentBorder" parentKey="Border" file="Interface\Buttons\UI-TempEnchant-Border">
+        <Size>
+          <AbsDimension x="32" y="32"/>
+        </Size>
+        <Anchors>
+          <Anchor point="CENTER"/>
+        </Anchors>
+      </Texture>
+    </Layer>
+  </Layers>
+  <Scripts>
+    <OnLoad>
+      BetterBuffsEnchantButton_OnLoad(self)
+    </OnLoad>
+    <OnUpdate>
+      BetterBuffsEnchantButton_OnUpdate(self, elapsed)
+    </OnUpdate>
+    <!--
+    <OnClick>
+      BetterBuffsEnchantButton_OnClick(self, button, down)
+    </OnClick>
+    -->
+    <OnEnter>
+      BetterBuffsEnchantButton_OnEnter(self, motion)
+    </OnEnter>
+    <OnLeave>
+      GameTooltip:Hide()
+    </OnLeave>
+  </Scripts>
+</Button>
+<Frame name="BetterBuffs" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="50" y="50"/>
+  </Size>
+  <Anchors>
+    <Anchor point="CENTER" relativePoint="CENTER" relativeTo="UIParent" x="0" y="0" />
+  </Anchors>
+  <Scripts>
+    <OnLoad function="BetterBuffs_OnLoad"/>
+    <OnEvent function="BetterBuffs_OnEvent"/>
+    <OnUpdate function="BetterBuffs_OnUpdate"/>
+  </Scripts>
+</Frame>
+<Frame name="BetterBuffsBuffFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="50" y="50"/>
+  </Size>
+  <Anchors>
+    <Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" relativeTo="UIParent" x="-215" y="-10" />
+  </Anchors>
+</Frame>
+<Frame name="BetterBuffsDebuffFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="50" y="50"/>
+  </Size>
+  <Anchors>
+    <Anchor point="TOPLEFT" relativePoint="TOPLEFT" relativeTo="UIParent" x="790" y="-170" />
+  </Anchors>
+</Frame>
+<Frame name="BetterBuffsEnchantFrame" parent="UIParent" frameStrata="LOW" toplevel="true">
+  <Size>
+    <AbsDimension x="36" y="36"/>
+  </Size>
+  <Anchors>
+    <Anchor point="TOPRIGHT" relativeTo="UIParent" relativePoint="TOPRIGHT" x="-60" y="-225" />
+  </Anchors>
+  <Frames>
+    <Button name="BetterBuffsEnchant1" inherits="BetterBuffsEnchantButtonTemplate">
+      <Anchors>
+        <Anchor point="TOPRIGHT">
+          <Offset>
+            <AbsDimension x="0" y="0"/>
+          </Offset>
+        </Anchor>
+      </Anchors>
+    </Button>
+    <Button name="BetterBuffsEnchant2" inherits="BetterBuffsEnchantButtonTemplate">
+      <Anchors>
+        <Anchor point="RIGHT" relativeTo="BetterBuffsEnchant1" relativePoint="LEFT">
+          <Offset>
+            <AbsDimension x="-5" y="0"/>
+          </Offset>
+        </Anchor>
+      </Anchors>
+    </Button>
+    <Button name="BetterBuffsEnchant3" inherits="BetterBuffsEnchantButtonTemplate">
+      <Anchors>
+        <Anchor point="RIGHT" relativeTo="BetterBuffsEnchant2" relativePoint="LEFT">
+          <Offset>
+            <AbsDimension x="-5" y="0"/>
+          </Offset>
+        </Anchor>
+      </Anchors>
+    </Button>
+  </Frames>
+  <Scripts>
+    <OnUpdate function="BetterBuffsEnchantFrame_OnUpdate"/>
+  </Scripts>
+</Frame>
 </Ui>

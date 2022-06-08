@@ -47,6 +47,7 @@ function BetterBuffsAuraButton_UpdateDuration(auraButton, timeLeft)
   local duration = auraButton.duration
   if SHOW_BUFF_DURATIONS == "1" and timeLeft then
     duration:SetFormattedText(SecondsToTimeAbbrev(timeLeft))
+
     if timeLeft < BUFF_DURATION_WARNING_TIME then
       duration:SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
     else
@@ -260,44 +261,142 @@ function BetterBuffsBuffButton_OnClick(self)
   CancelUnitBuff(self.unit, self:GetID(), self.filter)
 end
 
-do
-  function BetterBuffs_UpdateWithSlots(buttonName, unit, filter, maxCount)
-    --print("BetterBuffs_UpdateWithSlots")
-    local index = 1
-    AuraUtil.ForEachAura(unit, filter, maxCount, function(...)
-      local _, texture, count, debuffType, duration, expirationTime, _, _, _, _, _, _, _, _, timeMod = ...
-      BetterBuffsAuraButton_Update(buttonName, index, filter, texture, count, debuffType, duration, expirationTime, timeMod)
-      index = index + 1
-      return index > maxCount
-    end)
+function BetterBuffs_UpdateWithSlots(buttonName, unit, filter, maxCount)
+  --print("BetterBuffs_UpdateWithSlots")
+  local index = 1
+  AuraUtil.ForEachAura(unit, filter, maxCount, function(...)
+    local _, texture, count, debuffType, duration, expirationTime, _, _, _, _, _, _, _, _, timeMod = ...
+    BetterBuffsAuraButton_Update(buttonName, index, filter, texture, count, debuffType, duration, expirationTime, timeMod)
+    index = index + 1
+    return index > maxCount
+  end)
 
-    local buffFrame
-    if filter == "HELPFUL" then
-      buffFrame = BetterBuffsBuffFrame
-    else
-      buffFrame = BetterBuffsDebuffFrame
-    end
-
-    -- hide remaining frames
-    local count = index - 1
-    local buffArray = buffFrame[buttonName]
-    if buffArray then
-      for i = index, #buffArray do
-        --print("filter: " .. filter .. ", hiding index: " .. index)
-        buffArray[i]:Hide()
-      end
-    end
-
-    return count
+  local buffFrame
+  if filter == "HELPFUL" then
+    buffFrame = BetterBuffsBuffFrame
+  else
+    buffFrame = BetterBuffsDebuffFrame
   end
 
-  function BetterBuffs_UnitAuraEvent()
-    --print("BetterBuffs_UnitAuraEvent")
-    numBuffsDisplayed = BetterBuffs_UpdateWithSlots("BetterBuffsBuffButton", PlayerFrame.unit, "HELPFUL", maxBuffsToDisplay)
-    --print("Buffs: " .. numBuffsDisplayed)
-    numDebuffsDisplayed = BetterBuffs_UpdateWithSlots("BetterBuffsDebuffButton", PlayerFrame.unit, "HARMFUL", maxDebuffsToDisplay)
-    --print("Debuffs: " .. numDebuffsDisplayed)
+  -- hide remaining frames
+  local count = index - 1
+  local buffArray = buffFrame[buttonName]
+  if buffArray then
+    for i = index, #buffArray do
+      --print("filter: " .. filter .. ", hiding index: " .. index)
+      buffArray[i]:Hide()
+    end
+  end
 
-    BetterBuffs_UpdateBuffAnchors()
+  return count
+end
+
+function BetterBuffs_UnitAuraEvent()
+  --print("BetterBuffs_UnitAuraEvent")
+  numBuffsDisplayed = BetterBuffs_UpdateWithSlots("BetterBuffsBuffButton", PlayerFrame.unit, "HELPFUL", maxBuffsToDisplay)
+  --print("Buffs: " .. numBuffsDisplayed)
+  numDebuffsDisplayed = BetterBuffs_UpdateWithSlots("BetterBuffsDebuffButton", PlayerFrame.unit, "HARMFUL", maxDebuffsToDisplay)
+  --print("Debuffs: " .. numDebuffsDisplayed)
+
+  BetterBuffs_UpdateBuffAnchors()
+end
+
+function BetterBuffsEnchantFrame_Hide()
+  BetterBuffsEnchant1:Hide()
+  BetterBuffsEnchant1Duration:Hide()
+  BetterBuffsEnchant2:Hide()
+  BetterBuffsEnchant2Duration:Hide()
+  BetterBuffsEnchant3:Hide()
+  BetterBuffsEnchant3Duration:Hide()
+end
+
+function BetterBuffsEnchantFrame_OnUpdate(self, elapsed)
+  if not PlayerFrame.unit or PlayerFrame.unit ~= "player" then
+    -- don't show temporary enchants when the player isn't controlling himself
+    BetterBuffsEnchantFrame_Hide()
+  else
+    BetterBuffsEnchantFrame_Update(GetWeaponEnchantInfo())
   end
 end
+
+function BetterBuffsEnchantFrame_Update(...)
+  local RETURNS_PER_ITEM = 4
+  local numVals = select("#", ...)
+  local numItems = numVals / RETURNS_PER_ITEM
+
+  local textureMapping = {
+    [1] = 16,	--Main hand
+    [2] = 17,	--Off-hand
+    [3] = 18,	--Ranged
+  }
+
+  if numItems == 0 then
+    BetterBuffsEnchantFrame_Hide()
+    return
+  end
+
+  local enchantIndex = 0
+  for itemIndex = numItems, 1, -1 do	--Loop through the items from the back.
+    local hasEnchant, enchantExpiration, _ = select(RETURNS_PER_ITEM * (itemIndex - 1) + 1, ...)
+    if hasEnchant then
+      enchantIndex = enchantIndex + 1
+      local enchantButton = BetterBuffsEnchantFrame.BetterBuffsEnchant[enchantIndex]
+      local textureName = GetInventoryItemTexture("player", textureMapping[itemIndex])
+      enchantButton:SetID(textureMapping[itemIndex])
+      enchantButton.Icon:SetTexture(textureName)
+      enchantButton:Show()
+
+      -- Show buff durations if necessary
+      if enchantExpiration then
+        enchantExpiration = enchantExpiration / 1000
+      end
+      BetterBuffsAuraButton_UpdateDuration(enchantButton, enchantExpiration)
+
+      -- Handle flashing
+      if enchantExpiration and enchantExpiration < BUFF_WARNING_TIME then
+        enchantButton:SetAlpha(BetterBuffsBuffFrame.BuffAlphaValue)
+      else
+        enchantButton:SetAlpha(1.0)
+      end
+    end
+  end
+
+  -- Hide unused enchants
+  for i=enchantIndex+1, NUM_TEMP_ENCHANT_FRAMES do
+    BetterBuffsEnchantFrame.BetterBuffsEnchant[i]:Hide()
+    BetterBuffsEnchantFrame.BetterBuffsEnchant[i].duration:Hide()
+  end
+
+  -- Position buff frame
+  -- BetterBuffsEnchantFrame:SetWidth(enchantIndex * 32)
+  if BetterBuffsBuffFrame.numEnchants ~= enchantIndex then
+    BetterBuffsBuffFrame.numEnchants = enchantIndex
+    BetterBuffs_UnitAuraEvent()
+  end
+end
+
+function BetterBuffsEnchantButton_OnLoad(self)
+  self:RegisterForClicks("RightButtonUp")
+end
+
+function BetterBuffsEnchantButton_OnUpdate(self, elapsed)
+  -- Update duration
+  if GameTooltip:IsOwned(self) then
+    BetterBuffsEnchantButton_OnEnter(self)
+  end
+end
+
+function BetterBuffsEnchantButton_OnEnter(self)
+  GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
+  GameTooltip:SetInventoryItem("player", self:GetID())
+end
+
+--function BetterBuffsEnchantButton_OnClick(self, button)
+--  if self:GetID() == 16 then
+--    CancelItemTempEnchantment(1)
+--  elseif self:GetID() == 17 then
+--    CancelItemTempEnchantment(2)
+--  elseif self:GetID() == 18 then
+--    CancelItemTempEnchantment(3)
+--  end
+--end
