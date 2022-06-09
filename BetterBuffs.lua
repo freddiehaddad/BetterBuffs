@@ -353,7 +353,7 @@ function BetterBuffsEnchantFrame_Update(...)
       BetterBuffsAuraButton_UpdateDuration(enchantButton, enchantExpiration)
 
       -- Handle flashing
-      if enchantExpiration and enchantExpiration < BUFF_WARNING_TIME then
+      if enchantExpiration and enchantExpiration < BUFF_WARNING_TIME and tonumber(BetterBuffsBuffFrame.BuffAlphaValue) then
         enchantButton:SetAlpha(BetterBuffsBuffFrame.BuffAlphaValue)
       else
         enchantButton:SetAlpha(1.0)
